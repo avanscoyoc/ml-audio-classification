@@ -1,0 +1,61 @@
+# Docker Compose for ML Audio Classification
+version: '3.8'
+
+services:
+  ml-audio-classification:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ml-audio-classification:latest
+    container_name: ml-audio-classification
+    environment:
+      # Google Cloud settings - update these values
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/gcp-key.json
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-your-project-id}
+      - GCS_BUCKET_NAME=${GCS_BUCKET_NAME:-dse-staff}
+      
+      # Application settings
+      - TESTING_MODE=${TESTING_MODE:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - MAX_WORKERS=${MAX_WORKERS:-4}
+      - AUDIO_SAMPLE_RATE=${AUDIO_SAMPLE_RATE:-22050}
+      
+      # ML settings
+      - RANDOM_SEED=${RANDOM_SEED:-42}
+      - DEFAULT_CV_FOLDS=${DEFAULT_CV_FOLDS:-5}
+    
+    volumes:
+      # Mount GCP credentials (create this directory and add your key)
+      - ${GCP_CREDENTIALS_PATH:-./credentials}:/app/credentials:ro
+      
+      # Mount data and results directories
+      - ${DATA_PATH:-./data}:/app/data
+      - ${RESULTS_PATH:-./results}:/app/results
+      
+      # Mount logs
+      - ${LOGS_PATH:-./logs}:/app/logs
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Default command - override for experiments
+    # Example: docker-compose run ml-audio-classification python -m ml_audio_classification run-experiment --models random_forest --species coyote --training-sizes 100
+    command: ["python", "-m", "ml_audio_classification", "--help"]
+    
+    # Networks
+    networks:
+      - ml-audio-network
+
+networks:
+  ml-audio-network:
+    driver: bridge

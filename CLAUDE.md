@@ -6,10 +6,10 @@ Build a Kubernetes-deployable application that runs multi-factor ML experiments 
 ## Core Requirements
 
 ### Data Pipeline
-- **Input**: Pull audio data from GCS bucket `dse-staff/soundhub/data/{species_name}/` (pos/neg subfolders)
-- **Special case**: Perch model uses `dse-staff/soundhub/data_5s/{species_name}/` 
+- **Input**: Pull audio data from GCS bucket `dse-staff/soundhub/data/audio/{species_name}/data` (pos/neg subfolders)
+- **Special case**: Perch model uses `dse-staff/soundhub/data/audio/{species_name}/data_5s` 
 - **Output**: Write results to GCS bucket `dse-staff/soundhub/results/`
-- **Species**: coyote, bullfrog (extensible to more)
+- **Species**: coyote, bullfrog, human_vocal (extensible to more)
 - **Balanced sampling**: Use equal numbers of pos/neg files for training each classifier
 - **Training size limits**: Maximum training size per species is constrained by `min(pos_samples, neg_samples)` to ensure balanced datasets
 

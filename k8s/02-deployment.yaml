@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-audio-classification
+  namespace: ml-audio-classification
+  labels:
+    app: ml-audio-classification
+spec:
+  replicas: 1  # Single instance for experiments
+  selector:
+    matchLabels:
+      app: ml-audio-classification
+  template:
+    metadata:
+      labels:
+        app: ml-audio-classification
+    spec:
+      containers:
+      - name: ml-audio-classification
+        image: ml-audio-classification:latest  # Replace with your registry
+        imagePullPolicy: IfNotPresent
+        
+        # Environment variables from ConfigMap and Secret
+        envFrom:
+        - configMapRef:
+            name: ml-audio-classification-config
+        - secretRef:
+            name: ml-audio-classification-secrets
+        
+        # Additional environment variables
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/app/credentials/gcp-key.json"
+        - name: PYTHONPATH
+          value: "/app/src"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        
+        # Resource limits and requests
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+          limits:
+            memory: "8Gi"
+            cpu: "4"
+        
+        # Volume mounts
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        - name: results-volume
+          mountPath: /app/results
+        - name: gcp-credentials
+          mountPath: /app/credentials
+          readOnly: true
+        
+        # Health checks
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import ml_audio_classification; print('OK')"
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 30
+          failureThreshold: 3
+        
+        readinessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import ml_audio_classification; print('OK')"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        
+        # Default command (can be overridden)
+        command: ["python", "-m", "ml_audio_classification"]
+        args: ["--help"]
+      
+      # Volumes
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: ml-audio-classification-data
+      - name: results-volume
+        persistentVolumeClaim:
+          claimName: ml-audio-classification-results
+      - name: gcp-credentials
+        secret:
+          secretName: ml-audio-classification-secrets
+          items:
+          - key: GCP_SERVICE_ACCOUNT_KEY
+            path: gcp-key.json
+      
+      # Node selection (optional)
+      # nodeSelector:
+      #   ml-workload: "true"
+      
+      # Tolerations for dedicated nodes (optional)
+      # tolerations:
+      # - key: "ml-workload"
+      #   operator: "Equal"
+      #   value: "true"
+      #   effect: "NoSchedule"
+      
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      
+      restartPolicy: Always

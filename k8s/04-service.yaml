@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-audio-classification-service
+  namespace: ml-audio-classification
+  labels:
+    app: ml-audio-classification
+spec:
+  selector:
+    app: ml-audio-classification
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP  # Change to LoadBalancer or NodePort if external access is needed
+---
+# Optional: Ingress for external access (requires ingress controller)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ml-audio-classification-ingress
+  namespace: ml-audio-classification
+  annotations:
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  # tls:
+  # - hosts:
+  #   - ml-audio-classification.yourdomain.com
+  #   secretName: ml-audio-classification-tls
+  rules:
+  - host: ml-audio-classification.yourdomain.com  # Replace with your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ml-audio-classification-service
+            port:
+              number: 8080
