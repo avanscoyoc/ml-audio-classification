@@ -188,3 +188,7 @@ echo
 echo "📁 View results (when complete):"
 echo "  kubectl get pods -n ml-audio-classification"
 echo "  kubectl exec -n ml-audio-classification [pod-name] -- ls -la /app/results"
+echo
+echo "Delete jobs:"
+echo "  kubectl delete job -n ml-audio-classification $JOB_NAME"
+echo "  kubectl delete jobs --all -n ml-audio-classification
