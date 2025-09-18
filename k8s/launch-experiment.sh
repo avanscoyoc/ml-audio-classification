@@ -161,9 +161,6 @@ $ARGS_YAML
           - key: GCP_SERVICE_ACCOUNT_KEY
             path: gcp-key.json
       
-      imagePullSecrets:
-      - name: gcr-json-key
-      
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
