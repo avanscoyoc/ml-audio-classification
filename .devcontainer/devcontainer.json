@@ -11,9 +11,9 @@
   ],
   "containerEnv": {
     "GOOGLE_APPLICATION_CREDENTIALS": "/app/credentials/gcp-key.json",
-    "GCP_PROJECT_ID": "dse-staff",
-    "GCS_BUCKET_NAME": "dse-staff",
-    "TESTING_MODE": "false",
+    "GCP_PROJECT_ID": "${localEnv:GCP_PROJECT_ID}",
+    "GCS_BUCKET_NAME": "${localEnv:GCS_BUCKET_NAME}",
+    "TESTING_MODE": "${localEnv:TESTING_MODE:false}",
     "PYTHONPATH": "/app/src"
   },
   "postCreateCommand": "pip install -e .[dev]",

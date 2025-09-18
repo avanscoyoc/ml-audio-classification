@@ -39,11 +39,15 @@ ml-audio-classification/
 git clone <your-repo-url>
 cd ml-audio-classification-v2
 
+# Quick setup with interactive script
+./scripts/setup-config.sh
+
+# OR manual setup:
 # Add GCP credentials
 mkdir -p credentials
 # Copy your service account JSON key to credentials/gcp-key.json
 
-# Configure environment
+# Configure environment  
 cp .env.example .env
 # Edit .env and set:
 #   GCP_PROJECT_ID=your-project-id

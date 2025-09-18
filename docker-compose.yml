@@ -9,10 +9,10 @@ services:
     image: ml-audio-classification:latest
     container_name: ml-audio-classification
     environment:
-      # Google Cloud settings - update these values
+      # Google Cloud settings - configure via .env file or environment variables
       - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/gcp-key.json
-      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-your-project-id}
-      - GCS_BUCKET_NAME=${GCS_BUCKET_NAME:-dse-staff}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GCS_BUCKET_NAME=${GCS_BUCKET_NAME}
       
       # Application settings
       - TESTING_MODE=${TESTING_MODE:-false}
