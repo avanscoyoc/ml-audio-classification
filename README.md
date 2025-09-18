@@ -87,7 +87,7 @@ pip install -e .
    ```
 
 2. **Update Configuration:**
-   # Edit .env file
+   Edit .env file
    ```bash
    GCP_PROJECT_ID=your-project-id
    GCS_BUCKET_NAME=your-bucket-name
@@ -112,20 +112,22 @@ pip install -e .
 ### CLI Commands
 
 **Single Experiment:**
+Using Docker
 ```bash
-# Using Docker
 docker-compose run --rm ml-audio-classification \
   python -m ml_audio_classification run-experiment \
   --models vgg mobilenet \
   --species coyote \
-  --training-sizes 100 200 300 \
+  --training-sizes 25 50 75 \
   --cv-folds 5
-
-# Local installation
+```
+Local installation
+```bash
 python -m ml_audio_classification run-experiment \
   --models birdnet mobilenet \
   --species bullfrog \
-  --training-sizes 50 100 150
+  --training-sizes 25 50 75 \
+  --cv-folds 5
 ```
 
 **Grid Search (Multiple Models/Species):**
@@ -134,7 +136,7 @@ docker-compose run --rm ml-audio-classification \
   python -m ml_audio_classification grid-search \
   --models vgg mobilenet resnet birdnet perch \
   --species coyote bullfrog human_vocal \
-  --training-sizes 100 200 300 \
+  --training-sizes 25 50 75 100 \
   --max-concurrent 2
 ```
 
@@ -158,7 +160,7 @@ docker-compose run --rm ml-audio-classification \
 
 **Run Experiments on K8s:**
 ```bash
-# Deploy experiment job
+# Edit and deploy experiment job
 kubectl apply -f k8s/03-experiment-job.yaml
 
 # Monitor progress
@@ -168,7 +170,7 @@ kubectl logs -f job/ml-audio-experiment -n ml-audio-classification
 kubectl cp ml-audio-classification/pod-name:/app/results ./local-results
 ```
 
-**Scale Experiments:**
+**Scale Experiments (preferred):**
 ```bash
 # Launch multiple experiments
 ./k8s/launch-experiment.sh
@@ -193,6 +195,8 @@ kubectl get jobs -n ml-audio-classification
 - `k8s/01-namespace-config.yaml` - Kubernetes configuration
 
 Results are automatically saved to GCS (`your-bucket/soundhub/results/`) and locally (`./results/`) with timestamps and experiment metadata.
+```mermaid
+graph LR
     G --> H[Visualization]
     G --> I[Export to GCS]
 ```
@@ -209,18 +213,6 @@ graph LR
     E --> G[Predictions]
     F --> G
 ```
-
-## Performance Benchmarks
-
-| Model | ROC-AUC | Training Time | Memory Usage |
-|-------|---------|---------------|--------------|
-| VGG | 0.91 | 15m | 2GB |
-| MobileNet | 0.89 | 10m | 1GB |
-| ResNet | 0.93 | 25m | 3GB |
-| BirdNET | 0.96 | 5m | 1.5GB |
-| Perch | 0.94 | 8m | 2GB |
-
-*Results on Coyote dataset with 1000 training samples*
 
 ## Troubleshooting
 
