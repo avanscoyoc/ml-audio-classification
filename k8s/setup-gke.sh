@@ -133,19 +133,18 @@ kubectl get nodes
 log_success "✅ kubectl is now connected to your GKE cluster!"
 
 # Create a container registry for your Docker images
-log_info "📦 Setting up Container Registry..."
-gcloud services enable containerregistry.googleapis.com
+log_info "📦 Setting up GitHub Container Registry..."
 
-# Configure Docker to use gcloud as a credential helper
-log_info "🐳 Configuring Docker for GCR..."
-gcloud auth configure-docker
+# Configure Docker to use github as a credential helper
+log_info "🐳 Configuring Docker for GHCR..."
+gcloud auth configure-docker ghcr.io
 
 log_success "✅ GKE cluster setup complete!"
 echo
 echo "🎯 Next Steps:"
-echo "1. Push your Docker image to GCR:"
-echo "   docker tag ml-audio-classification:k8s gcr.io/$PROJECT_ID/ml-audio-classification:latest"
-echo "   docker push gcr.io/$PROJECT_ID/ml-audio-classification:latest"
+echo "1. Push your Docker image to GHCR:"
+echo "   docker tag ml-audio-classification:k8s ghcr.io/avanscoyoc/ml-audio-classification:latest"
+echo "   docker push ghcr.io/avanscoyoc/ml-audio-classification:latest"
 echo
 echo "2. Deploy your application:"
 echo "   ./k8s/deploy-complete.sh"

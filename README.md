@@ -37,7 +37,7 @@ ml-audio-classification/
 ```bash
 # Clone repository
 git clone <your-repo-url>
-cd ml-audio-classification-v2
+cd ml-audio-classification
 
 # Quick setup with interactive script
 ./scripts/setup-config.sh

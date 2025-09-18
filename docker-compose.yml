@@ -1,12 +1,10 @@
 # Docker Compose for ML Audio Classification
-version: '3.8'
-
 services:
   ml-audio-classification:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ml-audio-classification:latest
+    image: ghcr.io/avanscoyoc/ml-audio-classification:latest
     container_name: ml-audio-classification
     environment:
       # Google Cloud settings - configure via .env file or environment variables

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: ml-audio-classification
-        image: ml-audio-classification:latest
+        image: ghcr.io/avanscoyoc/ml-audio-classification:latest
         imagePullPolicy: IfNotPresent
         
         # Environment variables from ConfigMap and Secret

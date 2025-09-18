@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: ml-audio-classification
-        image: ml-audio-classification:latest  # Replace with your registry
+        image: ghcr.io/avanscoyoc/ml-audio-classification:latest
         imagePullPolicy: IfNotPresent
         
         # Environment variables from ConfigMap and Secret
