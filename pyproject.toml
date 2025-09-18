@@ -7,7 +7,7 @@ name = "ml-audio-classification"
 version = "0.1.0"
 description = "Kubernetes-deployable ML audio classification experiment application"
 authors = [
-    {name = "DSE Soundhub Team", email = ""}
+    {name = "DSE Soundhub Team", email = "avanscoyoc@berkeley.edu"}
 ]
 readme = "README.md"
 license = {text = "MIT"}

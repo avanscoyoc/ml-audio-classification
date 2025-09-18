@@ -41,7 +41,7 @@ __all__ = [
     "ModelFactory"
 ]
 __author__ = "DSE Soundhub Team"
-__email__ = ""
+__email__ = "avanscoyoc@berkeley.edu"
 
 from .config import Settings
 from .core.exceptions import MLAudioClassificationError
