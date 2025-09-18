@@ -107,7 +107,7 @@ spec:
     spec:
       containers:
       - name: ml-audio-classification
-        image: gcr.io/dse-staff/ml-audio-classification:v1.0
+        image: ghcr.io/avanscoyoc/ml-audio-classification:latest
         imagePullPolicy: IfNotPresent
         
         envFrom:
@@ -189,6 +189,6 @@ echo "📁 View results (when complete):"
 echo "  kubectl get pods -n ml-audio-classification"
 echo "  kubectl exec -n ml-audio-classification [pod-name] -- ls -la /app/results"
 echo
-echo "Delete jobs:"
+echo "🗑️ Delete jobs:"
 echo "  kubectl delete job -n ml-audio-classification $JOB_NAME"
-echo "  kubectl delete jobs --all -n ml-audio-classification
+echo "  kubectl delete jobs --all -n ml-audio-classification"
