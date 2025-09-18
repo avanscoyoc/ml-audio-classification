@@ -40,8 +40,8 @@ __all__ = [
     "ResultsExporter",
     "ModelFactory"
 ]
-__author__ = "Audio ML Team"
-__email__ = "team@example.com"
+__author__ = "DSE Soundhub Team"
+__email__ = ""
 
 from .config import Settings
 from .core.exceptions import MLAudioClassificationError

@@ -25,6 +25,7 @@ class GCPConfig(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"  # Ignore extra fields that don't belong to this config
 
 
 class ExperimentConfig(BaseModel):
@@ -99,6 +100,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_nested_delimiter = "__"
         case_sensitive = False
+        extra = "ignore"  # Ignore extra environment variables that don't match our schema
 
 
 # Global settings instance

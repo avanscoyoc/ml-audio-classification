@@ -116,19 +116,6 @@ class TestAudioPreprocessor:
         np.testing.assert_array_equal(result, exact_audio)
     
     @patch('librosa.load')
-    async def test_preprocess_for_traditional_models(self, mock_load, audio_preprocessor, mock_audio_data):
-        """Test preprocessing for traditional ML models."""
-        mock_load.return_value = (mock_audio_data, 22050)
-        
-        features = await audio_preprocessor.preprocess_for_traditional_models(
-            Path("test.wav")
-        )
-        
-        assert isinstance(features, np.ndarray)
-        assert features.ndim == 1  # Flattened features
-        assert len(features) > 0
-    
-    @patch('librosa.load')
     async def test_preprocess_for_deep_learning_models(self, mock_load, audio_preprocessor, mock_audio_data):
         """Test preprocessing for deep learning models."""
         mock_load.return_value = (mock_audio_data, 22050)
@@ -140,13 +127,3 @@ class TestAudioPreprocessor:
         assert isinstance(spectrogram, np.ndarray)
         assert spectrogram.ndim == 2  # 2D spectrogram
         assert spectrogram.shape[0] == 128  # n_mels
-    
-    def test_get_feature_names(self, audio_preprocessor):
-        """Test feature name generation."""
-        # Test MFCC only
-        names = audio_preprocessor.get_feature_names(include_derivatives=False)
-        assert len(names) == 13 * 50  # 13 MFCC * ~50 time frames (approximate)
-        
-        # Test with derivatives
-        names_with_derivatives = audio_preprocessor.get_feature_names(include_derivatives=True)
-        assert len(names_with_derivatives) == 39 * 50  # 39 features * ~50 time frames

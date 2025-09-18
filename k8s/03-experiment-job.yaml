@@ -1,0 +1,165 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ml-audio-experiment
+  namespace: ml-audio-classification
+  labels:
+    app: ml-audio-classification
+    job-type: experiment
+spec:
+  template:
+    metadata:
+      labels:
+        app: ml-audio-classification
+        job-type: experiment
+    spec:
+      containers:
+      - name: ml-audio-classification
+        image: ml-audio-classification:latest
+        imagePullPolicy: IfNotPresent
+        
+        # Environment variables from ConfigMap and Secret
+        envFrom:
+        - configMapRef:
+            name: ml-audio-classification-config
+        - secretRef:
+            name: ml-audio-classification-secrets
+        
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/app/credentials/gcp-key.json"
+        - name: PYTHONPATH
+          value: "/app/src"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        # Set to false for real GCS operations, true for testing
+        - name: TESTING_MODE
+          value: "false"
+        
+        # Resource limits and requests
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+          limits:
+            memory: "8Gi"
+            cpu: "4"
+        
+        # Volume mounts
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        - name: results-volume
+          mountPath: /app/results
+        - name: gcp-credentials
+          mountPath: /app/credentials
+          readOnly: true
+        
+        # ============================================
+        # 🎯 EASILY CONFIGURABLE EXPERIMENT COMMAND
+        # ============================================
+        # Customize these parameters for your experiments:
+        
+        command: ["python", "-m", "ml_audio_classification", "run-experiment"]
+        args: 
+        # 🤖 MODELS - Choose from: birdnet, perch, vgg, mobilenet, resnet
+        - "--models"
+        - "birdnet"           # Add more models: "mobilenet" "vgg" "perch" "resnet"
+        
+        # 🐾 SPECIES - Your target species for classification
+        - "--species"
+        - "coyote"            # Add more species: "bullfrog" "wolf" etc.
+        - "bullfrog"
+        
+        # 📊 TRAINING SIZES - Number of samples per species for training
+        - "--training-sizes"
+        - "25"                # Add more sizes: "50" "100" "200" etc.
+        - "50"
+        
+        # 🔄 CROSS-VALIDATION FOLDS
+        - "--cv-folds"
+        - "3"                 # Recommended: 3-5 for speed vs accuracy balance
+        
+        # 🎲 RANDOM SEEDS - For reproducible training data draws
+        - "--random-seeds"
+        - "42"                # Add more seeds: "123" "456" "789" etc.
+        - "123"
+        - "456"
+        
+        # 📁 OUTPUT DIRECTORY
+        - "--output-dir"
+        - "/app/results"
+        
+        # Optional: Add experiment name for organized results
+        # - "--experiment-name"
+        # - "my-experiment-name"
+      
+      # Volumes
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: ml-audio-classification-data
+      - name: results-volume
+        persistentVolumeClaim:
+          claimName: ml-audio-classification-results
+      - name: gcp-credentials
+        secret:
+          secretName: ml-audio-classification-secrets
+          items:
+          - key: GCP_SERVICE_ACCOUNT_KEY
+            path: gcp-key.json
+      
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      
+      restartPolicy: Never
+  
+  # Job completion settings
+  backoffLimit: 2  # Number of retries on failure
+  ttlSecondsAfterFinished: 86400  # Clean up after 24 hours
+---
+# 📋 QUICK CONFIGURATION GUIDE
+# 
+# To customize your experiment, edit the args section above:
+#
+# 1. MODELS: Choose any combination of:
+#    - "birdnet"    (recommended - most reliable)
+#    - "mobilenet"  (good performance)
+#    - "vgg"        (solid baseline)
+#    - "perch"      (specialized for birds)
+#    - "resnet"     (powerful but resource-intensive)
+#
+# 2. SPECIES: Add your target species:
+#    - "coyote"
+#    - "bullfrog" 
+#    - "wolf"
+#    - etc. (must match your GCS data structure)
+#
+# 3. TRAINING SIZES: Experiment with different sample sizes:
+#    - "10", "25", "50", "100", "200", "500"
+#    - More samples = better performance but longer training
+#
+# 4. CV FOLDS: Cross-validation folds:
+#    - "3" (fast), "5" (standard), "10" (thorough)
+#
+# 5. RANDOM SEEDS: For multiple runs with different data splits:
+#    - "42", "123", "456", "789", "999"
+#    - Each seed gives different training/test splits
+#
+# 🚀 DEPLOYMENT COMMANDS:
+# 
+# 1. Apply this job:
+#    kubectl apply -f main-experiment-job.yaml
+#
+# 2. Monitor progress:
+#    kubectl logs -n ml-audio-classification job/ml-audio-experiment -f
+#
+# 3. Check status:
+#    kubectl get jobs -n ml-audio-classification
+#
+# 4. Get results:
+#    kubectl exec deployment/ml-audio-classification -n ml-audio-classification -- ls /app/results

@@ -1,7 +1,7 @@
 # Claude Instructions: ML Audio Classification Experiment Application
 
 ## Project Goal
-Build a Kubernetes-deployable application that runs multi-factor ML experiments on audio classification models, generating ROC-AUC comparison plots across different training data sizes and species.
+Build a Kubernetes-deployable application that runs multi-factor ML experiments on audio classification models. All models have pre-trained embeddings and will be retrained in the pipeline using transfer learning for different training data sizes and multiple species, ultimately generating ROC-AUC comparison plots for each species across different models and training data sizes.
 
 ## Core Requirements
 
@@ -38,6 +38,7 @@ Feel free to redesign to achieve the most efficient and maintainable solution.
 
 ## Implementation Guidelines
 - Use modern Python practices (3.10+, type hints, dataclasses/pydantic)
+- Create it in a containerized docker container
 - Build from scratch with clean architecture
 - Create complete project structure with proper packaging
 - Include setup.py/pyproject.toml, requirements files

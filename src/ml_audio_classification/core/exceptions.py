@@ -15,6 +15,11 @@ class DataPipelineError(MLAudioClassificationError):
     pass
 
 
+class AudioProcessingError(MLAudioClassificationError):
+    """Exception raised during audio processing operations."""
+    pass
+
+
 class ModelError(MLAudioClassificationError):
     """Exception raised during model operations."""
     pass

@@ -11,11 +11,11 @@ metadata:
   name: ml-audio-classification-config
   namespace: ml-audio-classification
 data:
+  # Application settings that match the updated configuration
   LOG_LEVEL: "INFO"
-  MAX_WORKERS: "4"
-  AUDIO_SAMPLE_RATE: "22050"
-  RANDOM_SEED: "42"
-  DEFAULT_CV_FOLDS: "5"
+  DEBUG: "false"
+  TESTING_MODE: "false"
+  DISABLE_GCS_UPLOAD: "false"
 ---
 apiVersion: v1
 kind: Secret
@@ -24,12 +24,12 @@ metadata:
   namespace: ml-audio-classification
 type: Opaque
 data:
-  # Base64 encoded values - replace with your actual encoded values
-  # To encode: echo -n "your-value" | base64
-  GCP_PROJECT_ID: eW91ci1wcm9qZWN0LWlk  # "your-project-id"
-  GCS_BUCKET_NAME: eW91ci1idWNrZXQtbmFtZQ==  # "your-bucket-name"
+  # Base64 encoded values for GCP configuration
+  # Project and bucket both use "dse-staff" as per CLAUDE.md
+  GCP_PROJECT_ID: ZHNlLXN0YWZm  # "dse-staff"
+  GCS_BUCKET_NAME: ZHNlLXN0YWZm  # "dse-staff"
   # Add your base64-encoded GCP service account key
-  GCP_SERVICE_ACCOUNT_KEY: eyJrZXkiOiAidmFsdWUifQ==  # Replace with actual key
+  GCP_SERVICE_ACCOUNT_KEY: eyJrZXkiOiAidmFsdWUifQ==  # Replace with actual key from credentials/gcp-key.json
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

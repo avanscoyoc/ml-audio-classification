@@ -1,0 +1,30 @@
+{
+  "name": "ML Audio Classification Dev Container",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/app",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
+  "mounts": [
+    "source=${localWorkspaceFolder}/credentials,target=/app/credentials,type=bind"
+  ],
+  "containerEnv": {
+    "GOOGLE_APPLICATION_CREDENTIALS": "/app/credentials/gcp-key.json",
+    "GCP_PROJECT_ID": "dse-staff",
+    "GCS_BUCKET_NAME": "dse-staff",
+    "TESTING_MODE": "false",
+    "PYTHONPATH": "/app/src"
+  },
+  "postCreateCommand": "pip install -e .[dev]",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter"
+      ]
+    }
+  },
+  "remoteUser": "appuser"
+}

@@ -9,6 +9,8 @@ from datetime import datetime
 
 from .config import settings
 from .core.logging import LoggerMixin
+from .core.reproducibility import set_global_seeds
+from .core.validation import validate_experiment_config
 from .experiments import (
     ExperimentRunner, 
     ExperimentConfig, 
@@ -23,6 +25,21 @@ class MLAudioClassificationCLI(LoggerMixin):
     
     def __init__(self) -> None:
         """Initialize CLI."""
+        # Initialize global reproducibility settings first
+        set_global_seeds(settings.experiment.seed)
+        
+        # Validate configuration
+        validation_report = validate_experiment_config()
+        if not validation_report["valid"]:
+            self.logger.error("Configuration validation failed!")
+            for error in validation_report["errors"]:
+                self.logger.error(f"  - {error}")
+            sys.exit(1)
+        
+        if validation_report["warnings"]:
+            for warning in validation_report["warnings"]:
+                self.logger.warning(f"  - {warning}")
+        
         self.experiment_runner = ExperimentRunner()
         self.scheduler = ExperimentScheduler()
         self.visualizer = ResultsVisualizer()
@@ -34,6 +51,7 @@ class MLAudioClassificationCLI(LoggerMixin):
         species: List[str],
         training_sizes: List[int],
         cv_folds: int = 5,
+        seeds: List[int] = None,
         output_dir: Optional[Path] = None
     ) -> None:
         """Run a single experiment.
@@ -43,11 +61,15 @@ class MLAudioClassificationCLI(LoggerMixin):
             species: List of species to test
             training_sizes: List of training sizes to test
             cv_folds: Number of cross-validation folds
+            seeds: List of random seeds for confidence intervals
             output_dir: Output directory for results
         """
+        if seeds is None:
+            seeds = [42]
+            
         if output_dir is None:
             # Local staging directory - final results uploaded to GCS per CLAUDE.md: dse-staff/soundhub/results/
-            output_dir = Path("./experiment_results")
+            output_dir = Path("./results")
         
         output_dir.mkdir(parents=True, exist_ok=True)
         
@@ -125,13 +147,13 @@ class MLAudioClassificationCLI(LoggerMixin):
             # Upload to GCS if configured and not disabled (CLAUDE.md specification: dse-staff/soundhub/results/)
             if settings.gcp.bucket_name and not settings.disable_gcs_upload:
                 try:
-                    gcs_path = f"gs://{settings.gcp.bucket_name}/soundhub/results/results_{timestamp}.json"
+                    gcs_path = f"gs://{settings.gcp.bucket_name}/{settings.gcp.results_path}/results_{timestamp}.json"
                     await self.exporter.upload_results_to_gcs(results, gcs_path, format="json")
                     
                     # Also upload plots if they exist
                     plots_dir = output_dir / "plots"
                     if plots_dir.exists():
-                        await self.exporter.upload_plots_to_gcs(plots_dir, f"soundhub/results/plots_{timestamp}")
+                        await self.exporter.upload_plots_to_gcs(plots_dir, f"{settings.gcp.results_path}/plots_{timestamp}")
                     
                     self.logger.info("Uploaded results and plots to GCS", gcs_path=gcs_path)
                     
@@ -162,6 +184,7 @@ class MLAudioClassificationCLI(LoggerMixin):
         species: List[str],
         training_sizes: List[int],
         cv_folds: int = 5,
+        seeds: List[int] = None,
         output_dir: Optional[Path] = None,
         max_concurrent: int = 2
     ) -> None:
@@ -172,9 +195,13 @@ class MLAudioClassificationCLI(LoggerMixin):
             species: List of species to test
             training_sizes: List of training sizes to test
             cv_folds: Number of cross-validation folds
+            seeds: List of random seeds for confidence intervals
             output_dir: Output directory for results
             max_concurrent: Maximum concurrent experiments
         """
+        if seeds is None:
+            seeds = [42]
+            
         if output_dir is None:
             # Local staging directory - final results uploaded to GCS per CLAUDE.md: dse-staff/soundhub/results/
             output_dir = Path("./grid_search_results")
@@ -333,15 +360,17 @@ def create_parser() -> argparse.ArgumentParser:
 Examples:
   # Run single experiment with specific models and species
   python -m ml_audio_classification run-experiment \\
-    --models random_forest vgg \\
+    --models birdnet vgg \\
     --species coyote \\
-    --training-sizes 100 500 1000
+    --training-sizes 100 500 1000 \\
+    --seeds 42 123 456
   
-  # Run comprehensive grid search
+  # Run comprehensive grid search with multiple seeds for confidence intervals
   python -m ml_audio_classification grid-search \\
-    --models random_forest svm vgg mobilenet resnet birdnet perch \\
+    --models birdnet perch vgg mobilenet resnet \\
     --species coyote bullfrog human_vocal \\
     --training-sizes 100 500 1000 2000 \\
+    --seeds 42 123 456 789 \\
     --max-concurrent 3
         """
     )
@@ -357,7 +386,7 @@ Examples:
         "--models",
         nargs="+",
         required=True,
-        choices=["random_forest", "svm", "vgg", "mobilenet", "resnet", "birdnet", "perch"],
+        choices=["birdnet", "perch", "vgg", "mobilenet", "resnet"],
         help="Models to test"
     )
     exp_parser.add_argument(
@@ -378,6 +407,13 @@ Examples:
         type=int,
         default=5,
         help="Number of cross-validation folds (default: 5)"
+    )
+    exp_parser.add_argument(
+        "--seeds",
+        nargs="+",
+        type=int,
+        default=[42],
+        help="Random seeds for confidence intervals (default: [42])"
     )
     exp_parser.add_argument(
         "--output-dir",
@@ -394,7 +430,7 @@ Examples:
         "--models",
         nargs="+",
         required=True,
-        choices=["random_forest", "svm", "vgg", "mobilenet", "resnet", "birdnet", "perch"],
+        choices=["birdnet", "perch", "vgg", "mobilenet", "resnet"],
         help="Models to test"
     )
     grid_parser.add_argument(
@@ -415,6 +451,13 @@ Examples:
         type=int,
         default=5,
         help="Number of cross-validation folds (default: 5)"
+    )
+    grid_parser.add_argument(
+        "--seeds",
+        nargs="+",
+        type=int,
+        default=[42],
+        help="Random seeds for confidence intervals (default: [42])"
     )
     grid_parser.add_argument(
         "--output-dir",
@@ -449,6 +492,7 @@ async def main() -> None:
                 species=args.species,
                 training_sizes=args.training_sizes,
                 cv_folds=args.cv_folds,
+                seeds=args.seeds,
                 output_dir=args.output_dir
             )
         elif args.command == "grid-search":
@@ -457,6 +501,7 @@ async def main() -> None:
                 species=args.species,
                 training_sizes=args.training_sizes,
                 cv_folds=args.cv_folds,
+                seeds=args.seeds,
                 output_dir=args.output_dir,
                 max_concurrent=args.max_concurrent
             )

@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
     
     # Default command - override for experiments
-    # Example: docker-compose run ml-audio-classification python -m ml_audio_classification run-experiment --models random_forest --species coyote --training-sizes 100
+    # Example: docker-compose run ml-audio-classification python -m ml_audio_classification run-experiment --models vgg mobilenet --species coyote --training-sizes 100
     command: ["python", "-m", "ml_audio_classification", "--help"]
     
     # Networks

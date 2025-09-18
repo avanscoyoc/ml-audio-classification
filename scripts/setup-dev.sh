@@ -97,28 +97,14 @@ install_dependencies() {
     
     cd "$PROJECT_ROOT"
     
-    # Install core dependencies
-    if [[ -f "requirements.txt" ]]; then
-        pip install -r requirements.txt
-        log_success "Core dependencies installed"
-    else
-        log_warning "requirements.txt not found"
-    fi
-    
-    # Install development dependencies
-    if [[ -f "requirements-dev.txt" ]]; then
-        pip install -r requirements-dev.txt
-        log_success "Development dependencies installed"
-    else
-        log_warning "requirements-dev.txt not found"
-    fi
-    
-    # Install package in editable mode
+    # Install package with all dependencies using pyproject.toml
     if [[ -f "pyproject.toml" ]]; then
-        pip install -e .
-        log_success "Package installed in editable mode"
+        # Install with development dependencies
+        pip install -e .[dev]
+        log_success "Package and all dependencies installed from pyproject.toml"
     else
-        log_warning "pyproject.toml not found"
+        log_error "pyproject.toml not found"
+        return 1
     fi
 }
 
@@ -309,8 +295,8 @@ show_summary() {
 
 4. Run your first experiment:
    python -m ml_audio_classification run-experiment \\
-     --models random_forest \\
-     --species "Turdus migratorius" \\
+     --models vgg \\
+     --species coyote \\
      --training-sizes 100
 
 5. Check the documentation:
